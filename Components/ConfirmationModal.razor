@@ -1,0 +1,51 @@
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> OnConfirmed { get; set; }
+    [Parameter] public EventCallback<bool> OnCancelled { get; set; }
+
+    private void Confirm()
+    {
+        OnConfirmed.InvokeAsync(true);
+        IsVisible = false;
+    }
+
+    private void Cancel()
+    {
+        OnCancelled.InvokeAsync(false);
+        IsVisible = false;
+    }
+}
+
+@if (IsVisible)
+{
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <h4>Подтверждение удаления</h4>
+            <p>Вы уверены, что хотите удалить пользователя?</p>
+            <button @onclick="Confirm">Да</button>
+            <button @onclick="Cancel">Нет</button>
+        </div>
+    </div>
+}
+
+<style>
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    width:800px;
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+</style>

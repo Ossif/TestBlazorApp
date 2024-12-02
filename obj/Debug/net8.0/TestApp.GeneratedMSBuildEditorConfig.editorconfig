@@ -22,6 +22,10 @@ build_property._RazorSourceGeneratorDebug =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BcHAucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[/home/user/BlazorProjects/TestApp/Components/ConfirmationModal.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9Db25maXJtYXRpb25Nb2RhbC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [/home/user/BlazorProjects/TestApp/Components/Pages/Error.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9FcnJvci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 

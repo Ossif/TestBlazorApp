@@ -11,33 +11,34 @@
 }
 @if (@isAddUserFormVisible)
 {
-    <EditForm Model="@newUser" OnValidSubmit="AddUser" style="display:row;">
+    <EditForm Model="@newUser" OnValidSubmit="AddUser">
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; padding:10px;">
+            <div class="vertical-container">
+                <label>Имя:</label>
+                <InputText @bind-Value="newUser.FirstName" />
+            </div>
+            <div class="vertical-container">
+                <label>Фамилия:</label>
+                <InputText @bind-Value="newUser.LastName" />
+            </div>
+            <div class="vertical-container">
+                <label>Отчество:</label>
+                <InputText @bind-Value="newUser.SurName" />
+            </div>
+            <div class="vertical-container">
+                <label>Адрес:</label>
+                <InputText @bind-Value="newUser.Address" />
+            </div>
+            <div class="vertical-container">
+                <label>Телефон:</label>
+                <InputText @bind-Value="newUser.PhoneNumber" />
+            </div>
+            <button type="submit" class = "btn-primary">Сохранить</button>
+            <button @onclick="CancelAddingUser" class = "btn-cancel">Отменить добавление</button>
+        </div>
         <DataAnnotationsValidator />
         <ValidationSummary />
-
-        <div>
-            <label>Имя:</label>
-            <InputText @bind-Value="newUser.FirstName" />
-        </div>
-        <div>
-            <label>Фамилия:</label>
-            <InputText @bind-Value="newUser.LastName" />
-        </div>
-        <div>
-            <label>Отчество:</label>
-            <InputText @bind-Value="newUser.SurName" />
-        </div>
-        <div>
-            <label>Адрес:</label>
-            <InputText @bind-Value="newUser.Address" />
-        </div>
-        <div>
-            <label>Телефон:</label>
-            <InputText @bind-Value="newUser.PhoneNumber" />
-        </div>
-        <button type="submit">Сохранить</button>
     </EditForm>
-    <button @onclick="CancelAddingUser">Отменить добавление</button>
 }
 <QuickGrid Items="@users" Striped="true">
     <PropertyColumn Property="@(user => user.Id)" Sortable="true">
@@ -67,18 +68,24 @@
     </PropertyColumn>
     <PropertyColumn Property="@(user => user.PhoneNumber)" Sortable="true">
         <HeaderTemplate>
-            <span style="">Имя</span>
+            <span style="">Номер телефона</span>
         </HeaderTemplate>
     </PropertyColumn>
     <TemplateColumn Title="" Context="user">
-        <img src = "binicon.svg" @onclick="@(() => DeleteUser(user))" style="width:20px; height:20px; color:red; cursor: pointer;"/>
+        <img src = "binicon.svg" @onclick="@(() => ShowDeleteConfirmation(user))" style="width:20px; height:20px; color:red; cursor: pointer;"/>
     </TemplateColumn>
 </QuickGrid>
+
+<ConfirmationModal IsVisible="@isConfirmationVisible"
+                   OnConfirmed="@DeleteUserConfirmed"
+                   OnCancelled="@CancelDeleteUser" />
 
 @code {
     private IQueryable<User> users;
     private bool isAddUserFormVisible = false;
     private User newUser = new User();
+    // Новые переменные
+    private bool isConfirmationVisible = false;
     private User deletingUser;
 
     protected override void OnInitialized()
@@ -114,11 +121,26 @@
         StateHasChanged(); // Обновляем состояние компонента
     }
 
-     private async Task DeleteUser(User user){
-        DbContext.Users.Remove(user);
-        await DbContext.SaveChangesAsync();
-        
-        LoadUsers(); // Обновляем список пользователей
-        StateHasChanged(); // Обновляем состояние компонента
-    }
+    private void ShowDeleteConfirmation(User user)
+     {
+         deletingUser = user;
+         isConfirmationVisible = true; // Показать окно подтверждения
+     }
+
+     private async Task DeleteUserConfirmed(bool confirmed)
+     {
+         if (confirmed && deletingUser != null)
+         {
+             DbContext.Users.Remove(deletingUser);
+             await DbContext.SaveChangesAsync();
+             LoadUsers(); // Обновляем список пользователей
+         }
+         isConfirmationVisible = false; // Скрыть окно подтверждения
+         StateHasChanged(); // Обновляем состояние компонента
+     }
+
+     private void CancelDeleteUser(bool cancelled)
+     {
+         isConfirmationVisible = false; // Скрыть окно подтверждения
+     }
 }

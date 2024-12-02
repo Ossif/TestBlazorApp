@@ -10,6 +10,14 @@ a, .btn-link {
     color: #fff;
     background-color: #1b6ec2;
     border-color: #1861ac;
+    border-radius:7px;
+}
+
+.btn-cancel {
+    color: #fff;
+    background-color: red;
+    border-color: #b30000;
+    border-radius:7px;
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
@@ -48,4 +56,9 @@ h1:focus {
 
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
+}
+
+
+.vertical-container {
+    display: flex;flex-direction: column; gap: 10px;
 }
