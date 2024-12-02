@@ -1,0 +1,88 @@
+
+<!--
+@page "/"
+<QuickGrid Items="@people">
+    <PropertyColumn Property="@(p => p.PersonId)" Sortable="true" />
+    <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+    <PropertyColumn Property="@(p => p.BirthDate)" Format="yyyy-MM-dd" Sortable="true" />
+</QuickGrid>
+
+@code {
+    record Person(int PersonId, string Name, DateOnly BirthDate);
+
+    IQueryable<Person> people = new[]
+    {
+        new Person(10895, "Jean Martin", new DateOnly(1985, 3, 16)),
+        new Person(10944, "António Langa", new DateOnly(1991, 12, 1)),
+        new Person(11203, "Julie Smith", new DateOnly(1958, 10, 10)),
+        new Person(11205, "Nur Sari", new DateOnly(1922, 4, 27)),
+        new Person(11898, "Jose Hernandez", new DateOnly(2011, 5, 3)),
+        new Person(12130, "Kenji Sato", new DateOnly(2004, 1, 9)),
+    }.AsQueryable();
+}
+-->
+
+@page "/"
+@inject AppDbContext DbContext
+
+<h3>Справочник пользователей</h3>
+<button @onclick="() => ShowAddUserForm()">Добавить пользователя</button>
+@if (isAddUserFormVisible)
+{
+    <EditForm Model="@newUser" OnValidSubmit="AddUser">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div>
+            <label>Имя:</label>
+            <InputText @bind-Value="newUser.FirstName" />
+        </div>
+        <div>
+            <label>Фамилия:</label>
+            <InputText @bind-Value="newUser.LastName" />
+        </div>
+        <div>
+            <label>Отчество:</label>
+            <InputText @bind-Value="newUser.SurName" />
+        </div>
+        <div>
+            <label>Адрес:</label>
+            <InputText @bind-Value="newUser.Address" />
+        </div>
+        <div>
+            <label>Телефон:</label>
+            <InputText @bind-Value="newUser.PhoneNumber" />
+        </div>
+        <button type="submit">Сохранить</button>
+    </EditForm>
+}
+<QuickGrid Items="@DbContext.Users" Striped="true">
+    <PropertyColumn Property="@(user => user.Id)" Sortable="true" />
+    <PropertyColumn Property="@(user => user.FirstName)" Sortable="true" />
+    <PropertyColumn Property="@(user => user.LastName)" Sortable="true" />
+    <PropertyColumn Property="@(user => user.SurName)" Sortable="true" />
+    <PropertyColumn Property="@(user => user.Address)" Sortable="true" />
+    <PropertyColumn Property="@(user => user.PhoneNumber)" Sortable="true" />
+</QuickGrid>
+
+@code {
+    public bool isAddUserFormVisible = false;
+    public User newUser = new User();
+
+    public void ShowAddUserForm()
+    {
+        isAddUserFormVisible = true;
+        StateHasChanged(); // Обновить интерфейс
+    }
+
+    public void AddUser()
+    {
+        DbContext.Users.Add(newUser);
+        DbContext.SaveChanges();
+
+        newUser = new User(); // Сброс формы
+        isAddUserFormVisible = false; // Скрыть форму
+        // Здесь можно обновить интерфейс после добавления
+        StateHasChanged(); // Обновить интерфейс
+    }
+}
