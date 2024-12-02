@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "4EwgNSOeGPhkK3kml+gJTFyJnX5MpM+qbTVNzN1H1yQ=",
+  "Hash": "YbaJ14TxKnPhlkg4XJuBqzDFAWd0MzE1lJpGe0JAd5w=",
   "Source": "TestApp",
   "BasePath": "_content/TestApp",
   "Mode": "Default",
@@ -110,6 +110,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/app.css"
+    },
+    {
+      "Identity": "/home/user/BlazorProjects/TestApp/wwwroot/binicon.svg",
+      "SourceId": "TestApp",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/user/BlazorProjects/TestApp/wwwroot/",
+      "BasePath": "_content/TestApp",
+      "RelativePath": "binicon.svg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/binicon.svg"
     },
     {
       "Identity": "/home/user/BlazorProjects/TestApp/wwwroot/bootstrap/bootstrap.min.css",

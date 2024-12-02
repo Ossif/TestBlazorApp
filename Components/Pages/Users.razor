@@ -1,35 +1,17 @@
-
-<!--
 @page "/"
-<QuickGrid Items="@people">
-    <PropertyColumn Property="@(p => p.PersonId)" Sortable="true" />
-    <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
-    <PropertyColumn Property="@(p => p.BirthDate)" Format="yyyy-MM-dd" Sortable="true" />
-</QuickGrid>
-
-@code {
-    record Person(int PersonId, string Name, DateOnly BirthDate);
-
-    IQueryable<Person> people = new[]
-    {
-        new Person(10895, "Jean Martin", new DateOnly(1985, 3, 16)),
-        new Person(10944, "António Langa", new DateOnly(1991, 12, 1)),
-        new Person(11203, "Julie Smith", new DateOnly(1958, 10, 10)),
-        new Person(11205, "Nur Sari", new DateOnly(1922, 4, 27)),
-        new Person(11898, "Jose Hernandez", new DateOnly(2011, 5, 3)),
-        new Person(12130, "Kenji Sato", new DateOnly(2004, 1, 9)),
-    }.AsQueryable();
-}
--->
-
-@page "/"
+@rendermode InteractiveServer
 @inject AppDbContext DbContext
+@inject ILogger<Users> Logger
+
 
 <h3>Справочник пользователей</h3>
-<button @onclick="() => ShowAddUserForm()">Добавить пользователя</button>
-@if (isAddUserFormVisible)
+
+@if (!isAddUserFormVisible){
+    <button @onclick="ShowAddUserForm">Добавить пользователя</button>
+}
+@if (@isAddUserFormVisible)
 {
-    <EditForm Model="@newUser" OnValidSubmit="AddUser">
+    <EditForm Model="@newUser" OnValidSubmit="AddUser" style="display:row;">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
@@ -55,34 +37,88 @@
         </div>
         <button type="submit">Сохранить</button>
     </EditForm>
+    <button @onclick="CancelAddingUser">Отменить добавление</button>
 }
-<QuickGrid Items="@DbContext.Users" Striped="true">
-    <PropertyColumn Property="@(user => user.Id)" Sortable="true" />
-    <PropertyColumn Property="@(user => user.FirstName)" Sortable="true" />
-    <PropertyColumn Property="@(user => user.LastName)" Sortable="true" />
-    <PropertyColumn Property="@(user => user.SurName)" Sortable="true" />
-    <PropertyColumn Property="@(user => user.Address)" Sortable="true" />
-    <PropertyColumn Property="@(user => user.PhoneNumber)" Sortable="true" />
+<QuickGrid Items="@users" Striped="true">
+    <PropertyColumn Property="@(user => user.Id)" Sortable="true">
+        <HeaderTemplate>
+            <span style="">ID</span>
+        </HeaderTemplate>
+    </PropertyColumn>
+    <PropertyColumn Property="@(user => user.FirstName)" Sortable="true">
+        <HeaderTemplate>
+            <span style="">Имя</span>
+        </HeaderTemplate>
+    </PropertyColumn>
+    <PropertyColumn Property="@(user => user.LastName)" Sortable="true">
+        <HeaderTemplate>
+            <span style="">Фамилия</span>
+        </HeaderTemplate>
+    </PropertyColumn>
+    <PropertyColumn Property="@(user => user.SurName)" Sortable="true">
+        <HeaderTemplate>
+            <span style="">Отчество</span>
+        </HeaderTemplate>
+    </PropertyColumn>
+    <PropertyColumn Property="@(user => user.Address)" Sortable="true">
+        <HeaderTemplate>
+            <span style="">Адрес</span>
+        </HeaderTemplate>
+    </PropertyColumn>
+    <PropertyColumn Property="@(user => user.PhoneNumber)" Sortable="true">
+        <HeaderTemplate>
+            <span style="">Имя</span>
+        </HeaderTemplate>
+    </PropertyColumn>
+    <TemplateColumn Title="" Context="user">
+        <img src = "binicon.svg" @onclick="@(() => DeleteUser(user))" style="width:20px; height:20px; color:red; cursor: pointer;"/>
+    </TemplateColumn>
 </QuickGrid>
 
 @code {
-    public bool isAddUserFormVisible = false;
-    public User newUser = new User();
+    private IQueryable<User> users;
+    private bool isAddUserFormVisible = false;
+    private User newUser = new User();
+    private User deletingUser;
 
-    public void ShowAddUserForm()
+    protected override void OnInitialized()
     {
-        isAddUserFormVisible = true;
-        StateHasChanged(); // Обновить интерфейс
+        LoadUsers();
     }
 
-    public void AddUser()
+    private void LoadUsers()
+    {
+        users = DbContext.Users.ToList().AsQueryable(); // Загрузка пользователей из базы данных
+    }
+
+    private void ShowAddUserForm() {
+        Logger.LogInformation("Кнопка была нажата.");
+        isAddUserFormVisible = true;
+    }
+
+    private void CancelAddingUser()
+    {
+        newUser = new User(); // Сброс формы
+        isAddUserFormVisible = false; // Скрыть форму
+    }
+
+    private async Task AddUser()
     {
         DbContext.Users.Add(newUser);
-        DbContext.SaveChanges();
+        await DbContext.SaveChangesAsync();
+        
+        LoadUsers(); // Обновляем список пользователей
 
         newUser = new User(); // Сброс формы
         isAddUserFormVisible = false; // Скрыть форму
-        // Здесь можно обновить интерфейс после добавления
-        StateHasChanged(); // Обновить интерфейс
+        StateHasChanged(); // Обновляем состояние компонента
+    }
+
+     private async Task DeleteUser(User user){
+        DbContext.Users.Remove(user);
+        await DbContext.SaveChangesAsync();
+        
+        LoadUsers(); // Обновляем список пользователей
+        StateHasChanged(); // Обновляем состояние компонента
     }
 }

@@ -9,6 +9,10 @@
       "PackagePath": "staticwebassets/app.css"
     },
     {
+      "Id": "/home/user/BlazorProjects/TestApp/wwwroot/binicon.svg",
+      "PackagePath": "staticwebassets/binicon.svg"
+    },
+    {
       "Id": "/home/user/BlazorProjects/TestApp/wwwroot/bootstrap/bootstrap.min.css",
       "PackagePath": "staticwebassets/bootstrap/bootstrap.min.css"
     },
