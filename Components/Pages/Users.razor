@@ -1,7 +1,11 @@
 @page "/"
 @rendermode InteractiveServer
+@using Aspose.Svg
+@using Aspose.Svg.Dom
+@using System.IO
 @inject AppDbContext DbContext
 @inject ILogger<Users> Logger
+@inject IJSRuntime JSRuntime
 
 
 <h3>Справочник пользователей</h3>
@@ -14,23 +18,35 @@
     <EditForm Model="@newUser" OnValidSubmit="AddUser">
         <div style="display: flex; flex-wrap: wrap; gap: 10px; padding:10px;">
             <div class="vertical-container">
-                <label>Имя:</label>
+                <label>Имя*:</label>
                 <InputText @bind-Value="newUser.FirstName" />
             </div>
             <div class="vertical-container">
-                <label>Фамилия:</label>
+                <label>Фамилия*:</label>
                 <InputText @bind-Value="newUser.LastName" />
             </div>
             <div class="vertical-container">
-                <label>Отчество:</label>
+                <label>Отчество*:</label>
                 <InputText @bind-Value="newUser.SurName" />
             </div>
             <div class="vertical-container">
-                <label>Адрес:</label>
-                <InputText @bind-Value="newUser.Address" />
+                <label>Город*:</label>
+                <InputText @bind-Value="newUser.City" />
             </div>
             <div class="vertical-container">
-                <label>Телефон:</label>
+                <label>Улица*:</label>
+                <InputText @bind-Value="newUser.Square" />
+            </div>
+            <div class="vertical-container">
+                <label>Номер дома*:</label>
+                <InputText @bind-Value="newUser.HouseNumber" />
+            </div>
+            <div class="vertical-container">
+                <label>Номер квартиры:</label>
+                <InputText @bind-Value="newUser.ApartmentNumber" />
+            </div>
+            <div class="vertical-container">
+                <label>Телефон*:</label>
                 <InputText @bind-Value="newUser.PhoneNumber" />
             </div>
             <button type="submit" class = "btn-primary">Сохранить</button>
@@ -49,21 +65,39 @@
     <PropertyColumn Property="@(user => user.FirstName)" Sortable="true">
         <HeaderTemplate>
             <span style="">Имя</span>
+            <FilterTag ColumnName="FirstName" OnFilterClicked="ShowFilter" IsActive="@filters["FirstName"].IsActive"/>
         </HeaderTemplate>
     </PropertyColumn>
     <PropertyColumn Property="@(user => user.LastName)" Sortable="true">
         <HeaderTemplate>
             <span style="">Фамилия</span>
+            <FilterTag ColumnName="LastName" OnFilterClicked="ShowFilter" IsActive="@filters["LastName"].IsActive"/>
         </HeaderTemplate>
     </PropertyColumn>
     <PropertyColumn Property="@(user => user.SurName)" Sortable="true">
         <HeaderTemplate>
             <span style="">Отчество</span>
+            <FilterTag ColumnName="SurName" OnFilterClicked="ShowFilter" IsActive="@filters["SurName"].IsActive"/>
         </HeaderTemplate>
     </PropertyColumn>
-    <PropertyColumn Property="@(user => user.Address)" Sortable="true">
+    <PropertyColumn Property="@(user => user.City)" Sortable="true">
         <HeaderTemplate>
-            <span style="">Адрес</span>
+            <span style="">Город</span>
+        </HeaderTemplate>
+    </PropertyColumn>
+    <PropertyColumn Property="@(user => user.Square)" Sortable="true">
+        <HeaderTemplate>
+            <span style="">Площадь</span>
+        </HeaderTemplate>
+    </PropertyColumn>
+    <PropertyColumn Property="@(user => user.HouseNumber)" Sortable="true">
+        <HeaderTemplate>
+            <span style="">Номер дома</span>
+        </HeaderTemplate>
+    </PropertyColumn>
+    <PropertyColumn Property="@(user => user.ApartmentNumber)" Sortable="true">
+        <HeaderTemplate>
+            <span style="">Номер квартиры</span>
         </HeaderTemplate>
     </PropertyColumn>
     <PropertyColumn Property="@(user => user.PhoneNumber)" Sortable="true">
@@ -72,7 +106,7 @@
         </HeaderTemplate>
     </PropertyColumn>
     <TemplateColumn Title="" Context="user">
-        <img src = "binicon.svg" @onclick="@(() => ShowDeleteConfirmation(user))" style="width:20px; height:20px; color:red; cursor: pointer;"/>
+        <img id="binSVG" src="binicon.svg" style="width:20px;height:20px;cursor:pointer;" @onclick="@(() => ShowDeleteConfirmation(user))"/>
     </TemplateColumn>
 </QuickGrid>
 
@@ -80,35 +114,100 @@
                    OnConfirmed="@DeleteUserConfirmed"
                    OnCancelled="@CancelDeleteUser" />
 
+@if (isFilterVisible)
+{
+    <div class="filter-modal vertical-container" style="top: @filterModalTop; left: @filterModalLeft;">
+        <h5>Фильтр по значению @currFilterId</h5>
+        <div>
+            <label>
+                <input type="radio" checked="@(filters[@currFilterId].FilterChoice==0?true:false)" name="filterType" 
+                @onclick="@(() => filters[@currFilterId].FilterChoice = 0)"/> Равняется
+            </label>
+            <label>
+                <input type="radio" checked="@(filters[@currFilterId].FilterChoice==1?true:false)" name="filterType"
+                @onclick="@(() => filters[@currFilterId].FilterChoice = 1)"/> Включает
+            </label>
+        </div>
+        <input value="@currFilterQuery" placeholder="Введите значение..." @oninput="(e) => HandleFilterInput(e)"/>
+        <button @onclick="ApplyFilter">ОК</button>
+        
+    </div>
+}
+
+
 @code {
     private IQueryable<User> users;
     private bool isAddUserFormVisible = false;
     private User newUser = new User();
-    // Новые переменные
     private bool isConfirmationVisible = false;
     private User deletingUser;
 
-    protected override void OnInitialized()
+    //фильтрация
+    private Dictionary<string, FilterData> filters = new Dictionary<string, FilterData>
     {
+        { "FirstName", new FilterData { Query = string.Empty, FilterChoice = 0, IsActive = false } },
+        { "LastName", new FilterData { Query = string.Empty, FilterChoice = 0, IsActive = false } },
+        { "SurName", new FilterData { Query = string.Empty, FilterChoice = 0, IsActive = false } },
+        // Добавьте другие поля по мере необходимости
+    };
+
+    //Окно настройки фильтра
+    private bool isFilterVisible = false;
+    private string filterModalTop = "0px"; // Позиция сверху
+    private string filterModalLeft = "0px"; // Позиция слева
+    
+
+    //Актуальные данные - строки фильтров, с которыми работаю
+    private string currFilterId;//по какому столбцу сейчас идет фильтрация
+    private string currFilterQuery;
+
+    protected override void OnInitialized(){
+        base.OnInitialized();
         LoadUsers();
     }
-
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            // Вызываем JavaScript функцию для изменения цвета SVG на красный
+            await JSRuntime.InvokeVoidAsync("changeSVGColor", new object[] { "binSVG" }, "red");
+        }
+    }
     private void LoadUsers()
     {
-        users = DbContext.Users.ToList().AsQueryable(); // Загрузка пользователей из базы данных
+        var query = DbContext.Users.AsQueryable();
+
+        // Применение фильтрации на основе словаря фильтров
+        foreach (var filter in filters)
+        {
+            if (filter.Value.IsActive && !string.IsNullOrEmpty(filter.Value.Query))
+            {
+                switch (filter.Value.FilterChoice)
+                {
+                    case 0: // Равенство
+                        query = query.Where(user => EF.Property<string>(user, filter.Key) == filter.Value.Query);
+                        break;
+                    case 1: // Вхождение
+                        query = query.Where(user => EF.Property<string>(user, filter.Key).Contains(filter.Value.Query));
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        users = query.ToList().AsQueryable(); // Загрузка пользователей из базы данных
     }
 
     private void ShowAddUserForm() {
-        Logger.LogInformation("Кнопка была нажата.");
         isAddUserFormVisible = true;
     }
-
     private void CancelAddingUser()
     {
         newUser = new User(); // Сброс формы
         isAddUserFormVisible = false; // Скрыть форму
     }
-
     private async Task AddUser()
     {
         DbContext.Users.Add(newUser);
@@ -120,14 +219,12 @@
         isAddUserFormVisible = false; // Скрыть форму
         StateHasChanged(); // Обновляем состояние компонента
     }
-
     private void ShowDeleteConfirmation(User user)
      {
          deletingUser = user;
          isConfirmationVisible = true; // Показать окно подтверждения
      }
-
-     private async Task DeleteUserConfirmed(bool confirmed)
+    private async Task DeleteUserConfirmed(bool confirmed)
      {
          if (confirmed && deletingUser != null)
          {
@@ -138,9 +235,107 @@
          isConfirmationVisible = false; // Скрыть окно подтверждения
          StateHasChanged(); // Обновляем состояние компонента
      }
-
      private void CancelDeleteUser(bool cancelled)
      {
          isConfirmationVisible = false; // Скрыть окно подтверждения
      }
+
+
+
+    //------------------------FILTERS-------------------------------------
+
+    private async Task ShowFilter(string columnName)
+    {
+        if(currFilterId == null) currFilterId = columnName;
+        string newFilterId = columnName;
+        Logger.LogInformation("Компонент Users инициализирован в {newFilterId}", newFilterId);
+        if(!isFilterVisible){
+            isFilterVisible = true;
+
+            currFilterId = newFilterId;
+            currFilterQuery=filters[currFilterId].Query;
+            // Получаем позицию элемента с помощью JavaScript
+            var position = await JSRuntime.InvokeAsync<Position>("getElementPosition", new object[] { columnName });
+            if (position != null)
+            {
+                filterModalTop = $"{position.top + 3}px"; // Увеличиваем позицию сверху для отступа
+                filterModalLeft = $"{position.left}px"; // Позиция слева
+            }
+        }
+        else{
+            // Вызываем JavaScript функцию и получаем ID элемента
+            if(newFilterId != currFilterId){
+                //Пользователь нажал на другой фильтр, обновляем значения
+                currFilterId = newFilterId;
+                currFilterQuery=filters[currFilterId].Query;
+
+                var position = await JSRuntime.InvokeAsync<Position>("getElementPosition", new object[] { columnName });
+                if (position != null)
+                {
+                    filterModalTop = $"{position.top + 3}px"; // Увеличиваем позицию сверху для отступа
+                    filterModalLeft = $"{position.left}px"; // Позиция слева
+                }
+            }
+            else{
+                isFilterVisible = false;
+            }
+        }
+        StateHasChanged(); // Обновляем состояние компонента
+    }
+
+    private void HandleFilterInput(ChangeEventArgs e)
+    {
+        currFilterQuery = e.Value.ToString();
+        UpdateFilter(e);
+    }
+    //Обновление фильтра после ввода данных
+    private void UpdateFilter(ChangeEventArgs e)
+    {
+        Logger.LogInformation("UpdateFilter");
+        if (filters.ContainsKey(currFilterId))
+        {
+            filters[currFilterId].Query = currFilterQuery;
+            filters[currFilterId].IsActive = !string.IsNullOrEmpty(currFilterQuery); // Активен, если есть значение
+            Logger.LogInformation("Обновляем фильтр {currFilterId} - теперь его значения равны {filters[currFilterId].Query}, {filters[currFilterId].IsActive}", 
+                currFilterId, filters[currFilterId].Query, filters[currFilterId].IsActive);
+        }
+    }
+
+
+    //Применение фильтра
+    private void ApplyFilter()
+    {
+        LoadUsers(); // Применить фильтр и загрузить пользователей
+        isFilterVisible = false; // Скрыть окно фильтрации
+    }
+    //Очистка всех фильтров
+    private void ClearFilters()
+    {
+        foreach (var filter in filters)
+        {
+            filter.Value.IsActive = false;
+            filter.Value.Query = "";
+            filter.Value.FilterChoice = 0;
+        }
+        LoadUsers(); // Перезагрузить пользователей без фильтров
+    }
+    //Отмена настройки фильтра
+    private void CancelFilter()
+    {
+        isFilterVisible = false; // Скрыть окно фильтрации
+    }
+
+
+    //Обьекты
+    public class Position
+    {
+        public double top { get; set; }
+        public double left { get; set; }
+    }
+    public class FilterData
+    {
+        public string Query { get; set; } // Слово-фильтр
+        public int FilterChoice { get; set; } // Тип фильтрации (0 - равенство, 1 - вхождение)
+        public bool IsActive { get; set; } // Активен ли фильтр
+    }
 }

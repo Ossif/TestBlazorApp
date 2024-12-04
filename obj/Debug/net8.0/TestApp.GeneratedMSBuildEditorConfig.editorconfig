@@ -26,24 +26,16 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9Db25maXJtYXRpb25Nb2RhbC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/home/user/BlazorProjects/TestApp/Components/FilterTag.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9GaWx0ZXJUYWcucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/home/user/BlazorProjects/TestApp/Components/Pages/Error.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9FcnJvci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/user/BlazorProjects/TestApp/Components/Pages/Home.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Ib21lLnJhem9y
-build_metadata.AdditionalFiles.CssScope = 
-
-[/home/user/BlazorProjects/TestApp/Components/Pages/Test.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9UZXN0LnJhem9y
-build_metadata.AdditionalFiles.CssScope = 
-
 [/home/user/BlazorProjects/TestApp/Components/Pages/Users.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Vc2Vycy5yYXpvcg==
-build_metadata.AdditionalFiles.CssScope = 
-
-[/home/user/BlazorProjects/TestApp/Components/Pages/Weather.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9XZWF0aGVyLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
 [/home/user/BlazorProjects/TestApp/Components/Routes.razor]

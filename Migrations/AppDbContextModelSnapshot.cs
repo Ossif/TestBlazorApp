@@ -24,11 +24,18 @@ namespace TestApp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<string>("Address")
+                    b.Property<string>("ApartmentNumber")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("City")
                         .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("HouseNumber")
                         .IsRequired()
                         .HasColumnType("longtext");
 
@@ -37,6 +44,10 @@ namespace TestApp.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Square")
                         .IsRequired()
                         .HasColumnType("longtext");
 

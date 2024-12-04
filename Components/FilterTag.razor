@@ -1,0 +1,16 @@
+@code {
+    [Parameter] public string Id { get; set; }
+    [Parameter] public string ColumnName { get; set; }
+
+    [Parameter] public bool IsActive { get; set; }
+    [Parameter] public EventCallback<string> OnFilterClicked { get; set; }
+
+    private async Task HandleClick()
+    {
+        await OnFilterClicked.InvokeAsync(ColumnName);
+    }
+    private string GetElementId() => ColumnName; // Генерация id на основе ColumnName
+}
+<!--div style="display:inline-block; background-color:@(IsActive ? "yellow" : "transparent"); padding: 5px;"-->
+    <img id="@GetElementId()" src="filtericon.svg" style="border-radius:3px;width:15px;height:15px;cursor:pointer;padding-left:5px;background-color:@(IsActive ? "orange" : "transparent");" @onclick="HandleClick" />
+<!--/div-->

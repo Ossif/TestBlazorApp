@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "YbaJ14TxKnPhlkg4XJuBqzDFAWd0MzE1lJpGe0JAd5w=",
+  "Hash": "b/z6+MIiGur3poKLCIZjxPNq3cqZpehczF/JlkdNJ7Y=",
   "Source": "TestApp",
   "BasePath": "_content/TestApp",
   "Mode": "Default",
@@ -186,6 +186,44 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/favicon.png"
+    },
+    {
+      "Identity": "/home/user/BlazorProjects/TestApp/wwwroot/filtericon.svg",
+      "SourceId": "TestApp",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/user/BlazorProjects/TestApp/wwwroot/",
+      "BasePath": "_content/TestApp",
+      "RelativePath": "filtericon.svg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/filtericon.svg"
+    },
+    {
+      "Identity": "/home/user/BlazorProjects/TestApp/wwwroot/site.js",
+      "SourceId": "TestApp",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/user/BlazorProjects/TestApp/wwwroot/",
+      "BasePath": "_content/TestApp",
+      "RelativePath": "site.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/site.js"
     }
   ]
 }
