@@ -175,6 +175,16 @@
             <FilterTag ColumnName="PhoneNumber" OnFilterClicked="ShowFilter" IsActive="@filters["PhoneNumber"].IsActive"/>
         </HeaderTemplate>
     </PropertyColumn>
+
+    <!--SortableColumn TItem="User" Property="@(user => user.Square)"
+                HeaderText="Площадь"
+                ColumnName="Square"
+                SortedColumn="@sortedColumn"
+                IsAscending="isAscending"
+                IsActive="@filters["Square"].IsActive"
+                SortColumn="SortColumn" /-->
+
+
     <TemplateColumn Title="" Context="user">
         <HeaderTemplate>
             <span style="background-color:orange;border-radius 5px;cursor:pointer;margin:5px;" @onclick="ClearFilters">Очистить фильтры</span>
@@ -209,10 +219,12 @@
             </label>
         </div>
         <input value="@currFilterQuery" placeholder="Введите значение..." @oninput="(e) => HandleFilterInput(e)"/>
-        <button @onclick="ApplyFilter">ОК</button>
+        <button @onclick="ApplyFilter">Применить фильтры</button>
         
     </div>
 }
+
+
 
 
 @code {
@@ -263,16 +275,6 @@
         {
             // Вызываем JavaScript функцию для изменения цвета SVG на красный
             await JSRuntime.InvokeVoidAsync("changeSVGColor", new object[] { "binSVG" }, "red");
-        }
-        if(isFilterVisible){
-            // Получаем позицию элемента с помощью JavaScript
-            var position = await JSRuntime.InvokeAsync<Position>("getElementPosition", new object[] { currFilterId });
-
-            if (position != null)
-            {
-                filterModalTop = $"{position.top + 3}px"; // Увеличиваем позицию сверху для отступа
-                filterModalLeft = $"{position.left}px"; // Позиция слева
-            }
         }
     }
     private void LoadUsers()
@@ -371,6 +373,13 @@
 
             currFilterId = newFilterId;
             currFilterQuery=filters[currFilterId].Query;
+
+            var position = await JSRuntime.InvokeAsync<Position>("getElementPosition", new object[] { currFilterId });
+            if (position != null)
+            {
+                filterModalTop = $"{(int)position.top}px"; // Устанавливаем позицию сверху
+                filterModalLeft = $"{(int)position.left}px"; // Устанавливаем позицию слева
+            }
         }
         else{
             // Вызываем JavaScript функцию и получаем ID элемента
@@ -378,13 +387,13 @@
                 //Пользователь нажал на другой фильтр, обновляем значения
                 currFilterId = newFilterId;
                 currFilterQuery=filters[currFilterId].Query;
-/*
-                var position = await JSRuntime.InvokeAsync<Position>("getElementPosition", new object[] { columnName });
+
+                var position = await JSRuntime.InvokeAsync<Position>("getElementPosition", new object[] { currFilterId });
                 if (position != null)
                 {
-                    filterModalTop = $"{position.top + 3}px"; // Увеличиваем позицию сверху для отступа
-                    filterModalLeft = $"{position.left}px"; // Позиция слева
-                }*/
+                    filterModalTop = $"{(int)position.top}px"; // Устанавливаем позицию сверху
+                    filterModalLeft = $"{(int)position.left}px"; // Устанавливаем позицию слева
+                }
             }
             else{
                 isFilterVisible = false;
@@ -439,16 +448,17 @@
 
     //Ограничение количества записей на странице
     private int userCount = 25; // По умолчанию 25 пользователей на странице
-    private int currentPage = 1; // Текущая страница
     private int totalUsers; // Общее количество пользователей
 
+    private int TotalPages => (int)Math.Ceiling((double)totalUsers / userCount);
+    private int currentPage = 1; // Текущая страница
     private void OnUserCountChange(ChangeEventArgs e)
     {
         userCount = int.Parse(e.Value.ToString());
         currentPage = 1; // Сброс к первой странице при изменении количества
         LoadUsers(); // Перезагрузить пользователей с новыми настройками
     }
-    private int TotalPages => (int)Math.Ceiling((double)totalUsers / userCount);
+    
 
     private bool CanGoToPrevious => currentPage > 1;
     private bool CanGoToNext => currentPage < TotalPages;

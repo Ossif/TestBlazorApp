@@ -1,0 +1,35 @@
+@typeparam TItem
+@using System.Linq.Expressions
+
+<PropertyColumn Property="@Property" Sortable="true">
+    <HeaderTemplate>
+        <span style="" @onclick="@OnSortClicked">
+            @if (SortedColumn==ColumnName)
+            {
+                <span>@(IsAscending ? "▲" : "▼")</span>
+            }
+            @HeaderText
+        </span>
+        <FilterTag ColumnName="@ColumnName" OnFilterClicked="ShowFilter" IsActive="@IsActive"/>
+    </HeaderTemplate>
+</PropertyColumn>
+
+@code {
+    [Parameter] public Expression<Func<TItem, object>> Property { get; set; }
+    [Parameter] public string HeaderText { get; set; }
+    [Parameter] public string ColumnName { get; set; }
+    [Parameter] public bool IsActive { get; set; }
+    [Parameter] public string SortedColumn { get; set; }
+    [Parameter] public bool IsAscending { get; set; }
+    [Parameter] public EventCallback<string> SortColumn { get; set; }
+
+    private void OnSortClicked()
+    {
+        SortColumn.InvokeAsync(ColumnName);
+    }
+
+    private void ShowFilter()
+    {
+        // Логика для показа фильтра
+    }
+}
