@@ -13,6 +13,7 @@
 @if (!isAddUserFormVisible){
     <button @onclick="ShowAddUserForm" style="padding:10px;">Добавить пользователя</button>
 }
+<!--Поля создания новой записи-->
 @if (@isAddUserFormVisible)
 {
     <EditForm Model="@newUser" OnValidSubmit="AddUser" style="padding:10px;">
@@ -64,8 +65,11 @@
         <option value="100">100</option>
     </select>
 </div>
+
+<!--Таблица-->
+
 <QuickGrid Items="@users" Striped="true">
-     
+     <!--TODO: СОЗДАТЬ КАСТОМНЫЙ ТЕГ SortableColumn ДЛЯ ИЗБЕЖАНИЯ ПОВТОРЕНИЯ КОДА - ОН Включает PropertyColumn С ДОЧ. ЭЛЕМ-И (см выше)-->
     <PropertyColumn Property="@(user => user.Id)" Sortable="true">
         <HeaderTemplate>
             <span style="" @onclick="@(() => SortColumn("Id"))">
@@ -176,6 +180,7 @@
         </HeaderTemplate>
     </PropertyColumn>
 
+    <!--TODO: СОЗДАТЬ КАСТОМНЫЙ ТЕГ SortableColumn ДЛЯ ИЗБЕЖАНИЯ ПОВТОРЕНИЯ КОДА - ОН Включает PropertyColumn С ДОЧ. ЭЛЕМ-И (см выше)-->
     <!--SortableColumn TItem="User" Property="@(user => user.Square)"
                 HeaderText="Площадь"
                 ColumnName="Square"
@@ -204,6 +209,7 @@
                    OnConfirmed="@DeleteUserConfirmed"
                    OnCancelled="@CancelDeleteUser" />
 
+<!--окно настройки фильтра-->
 @if (isFilterVisible)
 {
     <div class="filter-modal" style="top: @filterModalTop; left: @filterModalLeft;">
@@ -227,14 +233,31 @@
 
 
 
+
+
 @code {
+    //|||||--------------------------------ПЕРЕМЕННЫЕ-------------------------------------------|||||
+    
+    //СПИСОК ПОЛЬЗОВАТЕЛЕЙ
     private IQueryable<User> users;
+    
+    //ПЕРЕМЕННЫЕ ДЛЯ ДОБАВЛЕНИЯ/УДАЛЕНИЯ ПОЛЬЗОВАТЕЛЕЙ
     private bool isAddUserFormVisible = false;
     private User newUser = new User();
     private bool isConfirmationVisible = false;
     private User deletingUser;
 
-    //фильтрация
+    //ОКНО НАСТРОЙКИ ФИЛЬТРОВ
+    private bool isFilterVisible = false;               //Видно ли окно
+    private string filterModalTop = "0px";              // Позиция сверху
+    private string filterModalLeft = "0px";             // Позиция слева
+    private string currFilterId;                        //По какому столбцу сейчас идет фильтрация
+    private string currFilterQuery;                     //Текущий введенный запрос в поле
+
+    //СЛОВАРЬ ФИЛЬТРОВ
+        //[Для корректной работы приложения, при добавления новой кнопки фильтров,
+        //необходимо скопировать одну из строк и изменить ключ на имя столбца в бд,
+        //по которому будет идти фильтрация]
     private static Dictionary<string, FilterData> filters = new Dictionary<string, FilterData>
     {
         { "Id", new FilterData { Query = string.Empty, FilterChoice = 0, IsActive = false } },
@@ -249,34 +272,45 @@
         // Добавьте другие поля по мере необходимости
     };
 
-    //Окно настройки фильтра
-    private bool isFilterVisible = false;
-    private string filterModalTop = "0px"; // Позиция сверху
-    private string filterModalLeft = "0px"; // Позиция слева
-    
+    //СОРТИРОВКА
+    private string sortedColumn;                        // Текущий столбец для сортировки
+    private bool isAscending;                           // Направление сортировки (возрастание или убывание)
 
-    //Актуальные данные - строки фильтров, с которыми работаю
-    private string currFilterId;//по какому столбцу сейчас идет фильтрация
-    private string currFilterQuery;
 
-    //---------------------------------------СОРТИРОВКА---------------------------------------------
-    private string sortedColumn; // Текущий столбец для сортировки
-    private bool isAscending; // Направление сортировки (возрастание или убывание)
+    //ПАГИНАЦИЯ
+    private int userCount = 25;                                 // По умолчанию 25 пользователей на странице
+    private int totalUsers;                                     // Общее количество пользователей
+    private int TotalPages => (int)Math.Ceiling((double)totalUsers / userCount);//Всего страниц
+    private int currentPage = 1;                                // Текущая страница
+    private bool CanGoToPrevious => currentPage > 1;            //Можно перейти назад по страницам?
+    private bool CanGoToNext => currentPage < TotalPages;       //Можно перейти вперед по страницам?
+
+
+
+
+
+
+
+
+    //|||||-------------------------------OVERRIDES----------------------------------------|||||
 
     protected override void OnInitialized(){
         base.OnInitialized();
         LoadUsers();
     }
-
+    /*
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         base.OnAfterRenderAsync(firstRender);
         if (firstRender)
         {
-            // Вызываем JavaScript функцию для изменения цвета SVG на красный
             await JSRuntime.InvokeVoidAsync("changeSVGColor", new object[] { "binSVG" }, "red");
         }
-    }
+    }*/
+    
+    //|||||---------------------------УПРАВЛЕНИЕ ЗАПИСЯМИ ТАБЛИЦЫ-------------------------|||||
+
+    //Обновление таблицы пользователей
     private void LoadUsers()
     {
 
@@ -317,22 +351,26 @@
         // Проверяем, нужно ли сбрасывать текущую страницу
         if (currentPage > TotalPages)
         {
-            currentPage = 1; // Устанавливаем на последнюю страницу, если текущая больше общего количества страниц
+            currentPage = 1; 
         }
 
         totalUsers = query.Count(); // Получаем общее количество пользователей
         users = query.Skip((currentPage - 1) * userCount).Take(userCount).ToList().AsQueryable(); // Загружаем только нужное количество пользователей
-    }    
+    }
 
-
+    //Отображение формы создания записи о пользователе
     private void ShowAddUserForm() {
         isAddUserFormVisible = true;
     }
+
+    //Отмена создания новой записи о пользователе
     private void CancelAddingUser()
     {
         newUser = new User(); // Сброс формы
         isAddUserFormVisible = false; // Скрыть форму
     }
+
+    //Добавление новой записи о пользователе
     private async Task AddUser()
     {
         DbContext.Users.Add(newUser);
@@ -344,61 +382,67 @@
         isAddUserFormVisible = false; // Скрыть форму
         StateHasChanged(); // Обновляем состояние компонента
     }
+
+    //Отображение подтверждения об удалении записи
     private void ShowDeleteConfirmation(User user)
-     {
-         deletingUser = user;
-         isConfirmationVisible = true; // Показать окно подтверждения
-     }
+    {
+        deletingUser = user;
+        isConfirmationVisible = true; // Показать окно подтверждения
+    }
+
+    //Удаление записи после подтверждения
     private async Task DeleteUserConfirmed(bool confirmed)
-     {
-         if (confirmed && deletingUser != null)
-         {
-             DbContext.Users.Remove(deletingUser);
-             await DbContext.SaveChangesAsync();
-             LoadUsers(); // Обновляем список пользователей
-         }
-         isConfirmationVisible = false; // Скрыть окно подтверждения
-         StateHasChanged(); // Обновляем состояние компонента
-     }
-     private void CancelDeleteUser(bool cancelled)
-     {
-         isConfirmationVisible = false; // Скрыть окно подтверждения
-     }
+    {
+        if (confirmed && deletingUser != null)
+        {
+            DbContext.Users.Remove(deletingUser);
+            await DbContext.SaveChangesAsync();
+            LoadUsers(); // Обновляем список пользователей
+        }
+        isConfirmationVisible = false; // Скрыть окно подтверждения
+        StateHasChanged(); // Обновляем состояние компонента
+    }
+
+    //Отмена удаления записи
+    private void CancelDeleteUser(bool cancelled)
+    {
+        isConfirmationVisible = false; // Скрыть окно подтверждения
+    }
 
 
 
-    //------------------------FILTERS-------------------------------------
-
+    //|||||-----------------------------ФИЛЬТРЫ-------------------------------------|||||
+    //Открытие окна настройки фильтра
     private async Task ShowFilter(string columnName)
     {
         if(currFilterId == null) currFilterId = columnName;
         string newFilterId = columnName;
-        Logger.LogInformation("Компонент Users инициализирован в {newFilterId}", newFilterId);
+        //Logger.LogInformation("Компонент Users инициализирован в {newFilterId}", newFilterId);
         if(!isFilterVisible){
             isFilterVisible = true;
 
             currFilterId = newFilterId;
             currFilterQuery=filters[currFilterId].Query;
-
+            //получение позиции кнопки фильтра
             var position = await JSRuntime.InvokeAsync<Position>("getElementPosition", new object[] { currFilterId });
             if (position != null)
             {
-                filterModalTop = $"{(int)position.top}px"; // Устанавливаем позицию сверху
-                filterModalLeft = $"{(int)position.left}px"; // Устанавливаем позицию слева
+                filterModalTop = $"{(int)position.top}px"; // Устанавливаем позицию окна сверху
+                filterModalLeft = $"{(int)position.left}px"; // Устанавливаем позицию окна слева
             }
         }
         else{
-            // Вызываем JavaScript функцию и получаем ID элемента
             if(newFilterId != currFilterId){
                 //Пользователь нажал на другой фильтр, обновляем значения
                 currFilterId = newFilterId;
                 currFilterQuery=filters[currFilterId].Query;
 
+                //получение позиции кнопки фильтра
                 var position = await JSRuntime.InvokeAsync<Position>("getElementPosition", new object[] { currFilterId });
                 if (position != null)
                 {
-                    filterModalTop = $"{(int)position.top}px"; // Устанавливаем позицию сверху
-                    filterModalLeft = $"{(int)position.left}px"; // Устанавливаем позицию слева
+                    filterModalTop = $"{(int)position.top}px"; // Устанавливаем позицию окна сверху
+                    filterModalLeft = $"{(int)position.left}px"; // Устанавливаем позицию окна слева
                 }
             }
             else{
@@ -408,11 +452,13 @@
         StateHasChanged(); // Обновляем состояние компонента
     }
 
+    //Хендлинг при вводе в поле ввода фильтра
     private void HandleFilterInput(ChangeEventArgs e)
     {
         currFilterQuery = e.Value.ToString();
         UpdateFilter(e);
     }
+
     //Обновление фильтра после ввода данных
     private void UpdateFilter(ChangeEventArgs e)
     {
@@ -426,7 +472,6 @@
         }
     }
 
-
     //Применение фильтра
     private void ApplyFilter()
     {
@@ -434,6 +479,7 @@
         StateHasChanged();
         isFilterVisible = false; // Скрыть окно фильтрации
     }
+
     //Очистка всех фильтров
     private void ClearFilters()
     {
@@ -446,6 +492,7 @@
         sortedColumn = null;
         LoadUsers(); // Перезагрузить пользователей без фильтров
     }
+
     //Отмена настройки фильтра
     private void CancelFilter()
     {
@@ -453,23 +500,16 @@
     }
 
 
-    //Ограничение количества записей на странице
-    private int userCount = 25; // По умолчанию 25 пользователей на странице
-    private int totalUsers; // Общее количество пользователей
-
-    private int TotalPages => (int)Math.Ceiling((double)totalUsers / userCount);
-    private int currentPage = 1; // Текущая страница
+    //|||||------------------------------------ПАГИНАЦИЯ-------------------------------------|||||
+    //Изменения количества отображаемых записей
     private void OnUserCountChange(ChangeEventArgs e)
     {
         userCount = int.Parse(e.Value.ToString());
         currentPage = 1; // Сброс к первой странице при изменении количества
         LoadUsers(); // Перезагрузить пользователей с новыми настройками
     }
-    
 
-    private bool CanGoToPrevious => currentPage > 1;
-    private bool CanGoToNext => currentPage < TotalPages;
-
+    //Переход на прошлую страницу
     private void PreviousPage()
     {
         if (CanGoToPrevious)
@@ -479,6 +519,7 @@
         }
     }
 
+    //Переход на следующую страницу
     private void NextPage()
     {
         if (CanGoToNext)
@@ -488,49 +529,52 @@
         }
     }
 
+    //|||||----------------------------ТЕСТОВЫЙ ФУНКИЦОНАЛ----------------------------|||||
+    //Добавление 100 тестовых записей в таблицу
     private async Task AddTestUsers()
-{
-    for (int i = 1; i <= 100; i++)
     {
-        var testUser = new User
+        for (int i = 1; i <= 100; i++)
         {
-            FirstName = $"Имя{i}",
-            LastName = $"Фамилия{i}",
-            SurName = $"Отчество{i}",
-            City = $"Город{i}",
-            Square = $"Площадь{i}",
-            HouseNumber = $"{i}",
-            ApartmentNumber = $"{(i % 10) + 1}", // Номера квартир от 1 до 10
-            PhoneNumber = $"(999) 123-45-{i:D2}" // Формат номера телефона
-        };
+            var testUser = new User
+            {
+                FirstName = $"Имя{i}",
+                LastName = $"Фамилия{i}",
+                SurName = $"Отчество{i}",
+                City = $"Город{i}",
+                Square = $"Площадь{i}",
+                HouseNumber = $"{i}",
+                ApartmentNumber = $"{(i % 10) + 1}", // Номера квартир от 1 до 10
+                PhoneNumber = $"(999) 123-45-{i:D2}" // Формат номера телефона
+            };
 
-        DbContext.Users.Add(testUser);
+            DbContext.Users.Add(testUser);
+        }
+
+        await DbContext.SaveChangesAsync();
+        LoadUsers(); // Обновляем список пользователей
     }
 
-    await DbContext.SaveChangesAsync();
-    LoadUsers(); // Обновляем список пользователей
-}
-
-
+    //|||||------------------------------------СОРТИРОВКА----------------------------------|||||
+    //Обработка нажатия на заголовок столбца - смена вида сортировки
     private void SortColumn(string columnName)
-{
-    if (sortedColumn == columnName)
     {
-        // Если уже отсортировано по этому столбцу, переключаем направление
-        isAscending = !isAscending;
+        if (sortedColumn == columnName)
+        {
+            // Если уже отсортировано по этому столбцу, переключаем направление
+            isAscending = !isAscending;
+        }
+        else
+        {
+            // Устанавливаем новый столбец для сортировки и направление по умолчанию (возрастание)
+            sortedColumn = columnName;
+            isAscending = true;
+        }
+
+        LoadUsers(); // Перезагружаем пользователей с учетом новой сортировки
     }
-    else
-    {
-        // Устанавливаем новый столбец для сортировки и направление по умолчанию (возрастание)
-        sortedColumn = columnName;
-        isAscending = true;
-    }
-
-    LoadUsers(); // Перезагружаем пользователей с учетом новой сортировки
-}
 
 
-    //Обьекты
+    //|||||------------------------------------ОБЬЕКТЫ----------------------------------|||||
     public class Position
     {
         public double top { get; set; }
