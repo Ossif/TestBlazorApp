@@ -11,11 +11,11 @@
 <h3>Справочник пользователей</h3>
 
 @if (!isAddUserFormVisible){
-    <button @onclick="ShowAddUserForm">Добавить пользователя</button>
+    <button @onclick="ShowAddUserForm" style="padding:10px;">Добавить пользователя</button>
 }
 @if (@isAddUserFormVisible)
 {
-    <EditForm Model="@newUser" OnValidSubmit="AddUser">
+    <EditForm Model="@newUser" OnValidSubmit="AddUser" style="padding:10px;">
         <div style="display: flex; flex-wrap: wrap; gap: 10px; padding:10px;">
             <div class="vertical-container">
                 <label>Имя*:</label>
@@ -56,6 +56,14 @@
         <ValidationSummary />
     </EditForm>
 }
+<div style="padding:10px;">
+    <label for="userCount" >Показать:</label>
+    <select @onchange="OnUserCountChange" id="userCount">
+        <option value="25">25</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+    </select>
+</div>
 <QuickGrid Items="@users" Striped="true">
     <PropertyColumn Property="@(user => user.Id)" Sortable="true">
         <HeaderTemplate>
@@ -83,40 +91,55 @@
     <PropertyColumn Property="@(user => user.City)" Sortable="true">
         <HeaderTemplate>
             <span style="">Город</span>
+            <FilterTag ColumnName="City" OnFilterClicked="ShowFilter" IsActive="@filters["City"].IsActive"/>
         </HeaderTemplate>
     </PropertyColumn>
     <PropertyColumn Property="@(user => user.Square)" Sortable="true">
         <HeaderTemplate>
             <span style="">Площадь</span>
+            <FilterTag ColumnName="Square" OnFilterClicked="ShowFilter" IsActive="@filters["Square"].IsActive"/>
         </HeaderTemplate>
     </PropertyColumn>
     <PropertyColumn Property="@(user => user.HouseNumber)" Sortable="true">
         <HeaderTemplate>
             <span style="">Номер дома</span>
+            <FilterTag ColumnName="HouseNumber" OnFilterClicked="ShowFilter" IsActive="@filters["HouseNumber"].IsActive"/>
         </HeaderTemplate>
     </PropertyColumn>
     <PropertyColumn Property="@(user => user.ApartmentNumber)" Sortable="true">
         <HeaderTemplate>
             <span style="">Номер квартиры</span>
+            <FilterTag ColumnName="ApartmentNumber" OnFilterClicked="ShowFilter" IsActive="@filters["ApartmentNumber"].IsActive"/>
         </HeaderTemplate>
     </PropertyColumn>
     <PropertyColumn Property="@(user => user.PhoneNumber)" Sortable="true">
         <HeaderTemplate>
             <span style="">Номер телефона</span>
+            <FilterTag ColumnName="PhoneNumber" OnFilterClicked="ShowFilter" IsActive="@filters["PhoneNumber"].IsActive"/>
         </HeaderTemplate>
     </PropertyColumn>
     <TemplateColumn Title="" Context="user">
-        <img id="binSVG" src="binicon.svg" style="width:20px;height:20px;cursor:pointer;" @onclick="@(() => ShowDeleteConfirmation(user))"/>
+        <HeaderTemplate>
+            <span style="background-color:orange;border-radius 5px;cursor:pointer;margin:5px;" @onclick="ClearFilters">Очистить фильтры</span>
+        </HeaderTemplate>
+        <ChildContent>
+            <img id="binSVG" src="binicon.svg" style="width:20px;height:20px;cursor:pointer;" @onclick="@(() => ShowDeleteConfirmation(user))"/>
+        </ChildContent>
     </TemplateColumn>
 </QuickGrid>
-
+<div style="padding:10px;">
+    <button @onclick="PreviousPage" disabled="@(!CanGoToPrevious)">Назад</button>
+    <span>Страница @currentPage из @TotalPages</span>
+    <button @onclick="NextPage" disabled="@(!CanGoToNext)">Вперед</button>
+</div>
+<button @onclick="AddTestUsers" class="btn-test" style="padding:10px;">Добавить 100 тестовых пользователей</button>
 <ConfirmationModal IsVisible="@isConfirmationVisible"
                    OnConfirmed="@DeleteUserConfirmed"
                    OnCancelled="@CancelDeleteUser" />
 
 @if (isFilterVisible)
 {
-    <div class="filter-modal vertical-container" style="top: @filterModalTop; left: @filterModalLeft;">
+    <div class="filter-modal" style="top: @filterModalTop; left: @filterModalLeft;">
         <h5>Фильтр по значению @currFilterId</h5>
         <div>
             <label>
@@ -148,6 +171,11 @@
         { "FirstName", new FilterData { Query = string.Empty, FilterChoice = 0, IsActive = false } },
         { "LastName", new FilterData { Query = string.Empty, FilterChoice = 0, IsActive = false } },
         { "SurName", new FilterData { Query = string.Empty, FilterChoice = 0, IsActive = false } },
+        { "City", new FilterData { Query = string.Empty, FilterChoice = 0, IsActive = false } },
+        { "Square", new FilterData { Query = string.Empty, FilterChoice = 0, IsActive = false } },
+        { "HouseNumber", new FilterData { Query = string.Empty, FilterChoice = 0, IsActive = false } },
+        { "ApartmentNumber", new FilterData { Query = string.Empty, FilterChoice = 0, IsActive = false } },
+        { "PhoneNumber", new FilterData { Query = string.Empty, FilterChoice = 0, IsActive = false } },
         // Добавьте другие поля по мере необходимости
     };
 
@@ -173,11 +201,22 @@
             // Вызываем JavaScript функцию для изменения цвета SVG на красный
             await JSRuntime.InvokeVoidAsync("changeSVGColor", new object[] { "binSVG" }, "red");
         }
+        if(isFilterVisible){
+            // Получаем позицию элемента с помощью JavaScript
+            var position = await JSRuntime.InvokeAsync<Position>("getElementPosition", new object[] { currFilterId });
+
+            if (position != null)
+            {
+                filterModalTop = $"{position.top + 3}px"; // Увеличиваем позицию сверху для отступа
+                filterModalLeft = $"{position.left}px"; // Позиция слева
+            }
+        }
     }
     private void LoadUsers()
     {
-        var query = DbContext.Users.AsQueryable();
 
+        var query = DbContext.Users.AsQueryable();
+        
         // Применение фильтрации на основе словаря фильтров
         foreach (var filter in filters)
         {
@@ -196,9 +235,10 @@
                 }
             }
         }
+        totalUsers = query.Count(); // Получаем общее количество пользователей
+        users = query.Skip((currentPage - 1) * userCount).Take(userCount).ToList().AsQueryable(); // Загружаем только нужное количество пользователей
+    }    
 
-        users = query.ToList().AsQueryable(); // Загрузка пользователей из базы данных
-    }
 
     private void ShowAddUserForm() {
         isAddUserFormVisible = true;
@@ -254,13 +294,6 @@
 
             currFilterId = newFilterId;
             currFilterQuery=filters[currFilterId].Query;
-            // Получаем позицию элемента с помощью JavaScript
-            var position = await JSRuntime.InvokeAsync<Position>("getElementPosition", new object[] { columnName });
-            if (position != null)
-            {
-                filterModalTop = $"{position.top + 3}px"; // Увеличиваем позицию сверху для отступа
-                filterModalLeft = $"{position.left}px"; // Позиция слева
-            }
         }
         else{
             // Вызываем JavaScript функцию и получаем ID элемента
@@ -268,13 +301,13 @@
                 //Пользователь нажал на другой фильтр, обновляем значения
                 currFilterId = newFilterId;
                 currFilterQuery=filters[currFilterId].Query;
-
+/*
                 var position = await JSRuntime.InvokeAsync<Position>("getElementPosition", new object[] { columnName });
                 if (position != null)
                 {
                     filterModalTop = $"{position.top + 3}px"; // Увеличиваем позицию сверху для отступа
                     filterModalLeft = $"{position.left}px"; // Позиция слева
-                }
+                }*/
             }
             else{
                 isFilterVisible = false;
@@ -324,6 +357,64 @@
     {
         isFilterVisible = false; // Скрыть окно фильтрации
     }
+
+
+    //Ограничение количества записей на странице
+    private int userCount = 25; // По умолчанию 25 пользователей на странице
+    private int currentPage = 1; // Текущая страница
+    private int totalUsers; // Общее количество пользователей
+
+    private void OnUserCountChange(ChangeEventArgs e)
+    {
+        userCount = int.Parse(e.Value.ToString());
+        currentPage = 1; // Сброс к первой странице при изменении количества
+        LoadUsers(); // Перезагрузить пользователей с новыми настройками
+    }
+    private int TotalPages => (int)Math.Ceiling((double)totalUsers / userCount);
+
+    private bool CanGoToPrevious => currentPage > 1;
+    private bool CanGoToNext => currentPage < TotalPages;
+
+    private void PreviousPage()
+    {
+        if (CanGoToPrevious)
+        {
+            currentPage--;
+            LoadUsers();
+        }
+    }
+
+    private void NextPage()
+    {
+        if (CanGoToNext)
+        {
+            currentPage++;
+            LoadUsers();
+        }
+    }
+
+    private async Task AddTestUsers()
+{
+    for (int i = 1; i <= 100; i++)
+    {
+        var testUser = new User
+        {
+            FirstName = $"Имя{i}",
+            LastName = $"Фамилия{i}",
+            SurName = $"Отчество{i}",
+            City = $"Город{i}",
+            Square = $"Площадь{i}",
+            HouseNumber = $"{i}",
+            ApartmentNumber = $"{(i % 10) + 1}", // Номера квартир от 1 до 10
+            PhoneNumber = $"(999) 123-45-{i:D2}" // Формат номера телефона
+        };
+
+        DbContext.Users.Add(testUser);
+    }
+
+    await DbContext.SaveChangesAsync();
+    LoadUsers(); // Обновляем список пользователей
+}
 
 
     //Обьекты

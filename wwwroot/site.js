@@ -2,6 +2,7 @@ function getElementPosition(elementId) {
     var element = document.getElementById(elementId);
     if (element) {
         var rect = element.getBoundingClientRect();
+        console.log("Event Target:", rect.top, rect.left);
         return {
             top: rect.top + window.scrollY,
             left: rect.left + window.scrollX
