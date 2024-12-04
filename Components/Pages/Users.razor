@@ -65,56 +65,113 @@
     </select>
 </div>
 <QuickGrid Items="@users" Striped="true">
+     
     <PropertyColumn Property="@(user => user.Id)" Sortable="true">
         <HeaderTemplate>
-            <span style="">ID</span>
+            <span style="" @onclick="@(() => SortColumn("Id"))">
+                @if (sortedColumn == "Id")
+                {
+                    <span>@(isAscending ? "▲" : "▼")</span>
+                }
+                Id
+            </span>
+            <FilterTag ColumnName="Id" OnFilterClicked="ShowFilter" IsActive="@filters["Id"].IsActive"/>
         </HeaderTemplate>
     </PropertyColumn>
+
     <PropertyColumn Property="@(user => user.FirstName)" Sortable="true">
         <HeaderTemplate>
-            <span style="">Имя</span>
+            <span style="" @onclick="@(() => SortColumn("FirstName"))">
+                @if (sortedColumn == "FirstName")
+                {
+                    <span>@(isAscending ? "▲" : "▼")</span>
+                }
+                Имя
+            </span>
             <FilterTag ColumnName="FirstName" OnFilterClicked="ShowFilter" IsActive="@filters["FirstName"].IsActive"/>
         </HeaderTemplate>
     </PropertyColumn>
     <PropertyColumn Property="@(user => user.LastName)" Sortable="true">
         <HeaderTemplate>
-            <span style="">Фамилия</span>
+            <span style="" @onclick="@(() => SortColumn("LastName"))">
+                @if (sortedColumn == "LastName")
+                {
+                    <span>@(isAscending ? "▲" : "▼")</span>
+                }
+                Фамилия
+            </span>
             <FilterTag ColumnName="LastName" OnFilterClicked="ShowFilter" IsActive="@filters["LastName"].IsActive"/>
         </HeaderTemplate>
     </PropertyColumn>
     <PropertyColumn Property="@(user => user.SurName)" Sortable="true">
         <HeaderTemplate>
-            <span style="">Отчество</span>
+            <span style="" @onclick="@(() => SortColumn("SurName"))">
+                @if (sortedColumn == "SurName")
+                {
+                    <span>@(isAscending ? "▲" : "▼")</span>
+                }
+                Отчество
+            </span>
             <FilterTag ColumnName="SurName" OnFilterClicked="ShowFilter" IsActive="@filters["SurName"].IsActive"/>
         </HeaderTemplate>
     </PropertyColumn>
     <PropertyColumn Property="@(user => user.City)" Sortable="true">
         <HeaderTemplate>
-            <span style="">Город</span>
+            <span style="" @onclick="@(() => SortColumn("City"))">
+                @if (sortedColumn == "City")
+                {
+                    <span>@(isAscending ? "▲" : "▼")</span>
+                }
+                Город
+            </span>
             <FilterTag ColumnName="City" OnFilterClicked="ShowFilter" IsActive="@filters["City"].IsActive"/>
         </HeaderTemplate>
     </PropertyColumn>
     <PropertyColumn Property="@(user => user.Square)" Sortable="true">
         <HeaderTemplate>
-            <span style="">Площадь</span>
+            <span style="" @onclick="@(() => SortColumn("Square"))">
+                @if (sortedColumn == "Square")
+                {
+                    <span>@(isAscending ? "▲" : "▼")</span>
+                }
+                Площадь
+            </span>
             <FilterTag ColumnName="Square" OnFilterClicked="ShowFilter" IsActive="@filters["Square"].IsActive"/>
         </HeaderTemplate>
     </PropertyColumn>
     <PropertyColumn Property="@(user => user.HouseNumber)" Sortable="true">
         <HeaderTemplate>
-            <span style="">Номер дома</span>
+            <span style="" @onclick="@(() => SortColumn("HouseNumber"))">
+                @if (sortedColumn == "HouseNumber")
+                {
+                    <span>@(isAscending ? "▲" : "▼")</span>
+                }
+                Номер дома
+            </span>
             <FilterTag ColumnName="HouseNumber" OnFilterClicked="ShowFilter" IsActive="@filters["HouseNumber"].IsActive"/>
         </HeaderTemplate>
     </PropertyColumn>
     <PropertyColumn Property="@(user => user.ApartmentNumber)" Sortable="true">
         <HeaderTemplate>
-            <span style="">Номер квартиры</span>
+            <span style="" @onclick="@(() => SortColumn("ApartmentNumber"))">
+                @if (sortedColumn == "ApartmentNumber")
+                {
+                    <span>@(isAscending ? "▲" : "▼")</span>
+                }
+                Номер квартиры
+            </span>
             <FilterTag ColumnName="ApartmentNumber" OnFilterClicked="ShowFilter" IsActive="@filters["ApartmentNumber"].IsActive"/>
         </HeaderTemplate>
     </PropertyColumn>
     <PropertyColumn Property="@(user => user.PhoneNumber)" Sortable="true">
         <HeaderTemplate>
-            <span style="">Номер телефона</span>
+            <span style="" @onclick="@(() => SortColumn("PhoneNumber"))">
+                @if (sortedColumn == "PhoneNumber")
+                {
+                    <span>@(isAscending ? "▲" : "▼")</span>
+                }
+                Номер телефона
+            </span>
             <FilterTag ColumnName="PhoneNumber" OnFilterClicked="ShowFilter" IsActive="@filters["PhoneNumber"].IsActive"/>
         </HeaderTemplate>
     </PropertyColumn>
@@ -166,8 +223,9 @@
     private User deletingUser;
 
     //фильтрация
-    private Dictionary<string, FilterData> filters = new Dictionary<string, FilterData>
+    private static Dictionary<string, FilterData> filters = new Dictionary<string, FilterData>
     {
+        { "Id", new FilterData { Query = string.Empty, FilterChoice = 0, IsActive = false } },
         { "FirstName", new FilterData { Query = string.Empty, FilterChoice = 0, IsActive = false } },
         { "LastName", new FilterData { Query = string.Empty, FilterChoice = 0, IsActive = false } },
         { "SurName", new FilterData { Query = string.Empty, FilterChoice = 0, IsActive = false } },
@@ -189,10 +247,15 @@
     private string currFilterId;//по какому столбцу сейчас идет фильтрация
     private string currFilterQuery;
 
+    //---------------------------------------СОРТИРОВКА---------------------------------------------
+    private string sortedColumn; // Текущий столбец для сортировки
+    private bool isAscending; // Направление сортировки (возрастание или убывание)
+
     protected override void OnInitialized(){
         base.OnInitialized();
         LoadUsers();
     }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         base.OnAfterRenderAsync(firstRender);
@@ -235,6 +298,20 @@
                 }
             }
         }
+
+        // Сортировка
+        if (!string.IsNullOrEmpty(sortedColumn))
+        {
+            if (isAscending)
+            {
+                query = query.OrderBy(user => EF.Property<string>(user, sortedColumn));
+            }
+            else
+            {
+                query = query.OrderByDescending(user => EF.Property<string>(user, sortedColumn));
+            }
+        }
+
         totalUsers = query.Count(); // Получаем общее количество пользователей
         users = query.Skip((currentPage - 1) * userCount).Take(userCount).ToList().AsQueryable(); // Загружаем только нужное количество пользователей
     }    
@@ -350,6 +427,7 @@
             filter.Value.Query = "";
             filter.Value.FilterChoice = 0;
         }
+        sortedColumn = null;
         LoadUsers(); // Перезагрузить пользователей без фильтров
     }
     //Отмена настройки фильтра
@@ -417,16 +495,28 @@
 }
 
 
+    private void SortColumn(string columnName)
+{
+    if (sortedColumn == columnName)
+    {
+        // Если уже отсортировано по этому столбцу, переключаем направление
+        isAscending = !isAscending;
+    }
+    else
+    {
+        // Устанавливаем новый столбец для сортировки и направление по умолчанию (возрастание)
+        sortedColumn = columnName;
+        isAscending = true;
+    }
+
+    LoadUsers(); // Перезагружаем пользователей с учетом новой сортировки
+}
+
+
     //Обьекты
     public class Position
     {
         public double top { get; set; }
         public double left { get; set; }
-    }
-    public class FilterData
-    {
-        public string Query { get; set; } // Слово-фильтр
-        public int FilterChoice { get; set; } // Тип фильтрации (0 - равенство, 1 - вхождение)
-        public bool IsActive { get; set; } // Активен ли фильтр
     }
 }

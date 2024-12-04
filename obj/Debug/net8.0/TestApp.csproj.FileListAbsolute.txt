@@ -1,9 +1,3 @@
-/home/user/BlazorProjects/TestApp/obj/Debug/net8.0/TestApp.csproj.AssemblyReference.cache
-/home/user/BlazorProjects/TestApp/obj/Debug/net8.0/TestApp.GeneratedMSBuildEditorConfig.editorconfig
-/home/user/BlazorProjects/TestApp/obj/Debug/net8.0/TestApp.AssemblyInfoInputs.cache
-/home/user/BlazorProjects/TestApp/obj/Debug/net8.0/TestApp.AssemblyInfo.cs
-/home/user/BlazorProjects/TestApp/obj/Debug/net8.0/TestApp.csproj.CoreCompileInputs.cache
-/home/user/BlazorProjects/TestApp/obj/Debug/net8.0/TestApp.MvcApplicationPartsAssemblyInfo.cache
 /home/user/BlazorProjects/TestApp/bin/Debug/net8.0/appsettings.Development.json
 /home/user/BlazorProjects/TestApp/bin/Debug/net8.0/appsettings.json
 /home/user/BlazorProjects/TestApp/bin/Debug/net8.0/TestApp.staticwebassets.runtime.json
@@ -12,6 +6,7 @@
 /home/user/BlazorProjects/TestApp/bin/Debug/net8.0/TestApp.runtimeconfig.json
 /home/user/BlazorProjects/TestApp/bin/Debug/net8.0/TestApp.dll
 /home/user/BlazorProjects/TestApp/bin/Debug/net8.0/TestApp.pdb
+/home/user/BlazorProjects/TestApp/bin/Debug/net8.0/Aspose.SVG.dll
 /home/user/BlazorProjects/TestApp/bin/Debug/net8.0/Humanizer.dll
 /home/user/BlazorProjects/TestApp/bin/Debug/net8.0/Microsoft.AspNetCore.Components.QuickGrid.dll
 /home/user/BlazorProjects/TestApp/bin/Debug/net8.0/Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter.dll
@@ -27,6 +22,7 @@
 /home/user/BlazorProjects/TestApp/bin/Debug/net8.0/Microsoft.EntityFrameworkCore.Design.dll
 /home/user/BlazorProjects/TestApp/bin/Debug/net8.0/Microsoft.EntityFrameworkCore.Relational.dll
 /home/user/BlazorProjects/TestApp/bin/Debug/net8.0/Microsoft.Extensions.DependencyModel.dll
+/home/user/BlazorProjects/TestApp/bin/Debug/net8.0/Microsoft.Win32.SystemEvents.dll
 /home/user/BlazorProjects/TestApp/bin/Debug/net8.0/Mono.TextTemplating.dll
 /home/user/BlazorProjects/TestApp/bin/Debug/net8.0/MySqlConnector.dll
 /home/user/BlazorProjects/TestApp/bin/Debug/net8.0/Newtonsoft.Json.dll
@@ -37,6 +33,8 @@
 /home/user/BlazorProjects/TestApp/bin/Debug/net8.0/System.Composition.Hosting.dll
 /home/user/BlazorProjects/TestApp/bin/Debug/net8.0/System.Composition.Runtime.dll
 /home/user/BlazorProjects/TestApp/bin/Debug/net8.0/System.Composition.TypedParts.dll
+/home/user/BlazorProjects/TestApp/bin/Debug/net8.0/System.Drawing.Common.dll
+/home/user/BlazorProjects/TestApp/bin/Debug/net8.0/System.Security.Permissions.dll
 /home/user/BlazorProjects/TestApp/bin/Debug/net8.0/cs/Microsoft.CodeAnalysis.resources.dll
 /home/user/BlazorProjects/TestApp/bin/Debug/net8.0/de/Microsoft.CodeAnalysis.resources.dll
 /home/user/BlazorProjects/TestApp/bin/Debug/net8.0/es/Microsoft.CodeAnalysis.resources.dll
@@ -89,6 +87,16 @@
 /home/user/BlazorProjects/TestApp/bin/Debug/net8.0/tr/Microsoft.CodeAnalysis.Workspaces.resources.dll
 /home/user/BlazorProjects/TestApp/bin/Debug/net8.0/zh-Hans/Microsoft.CodeAnalysis.Workspaces.resources.dll
 /home/user/BlazorProjects/TestApp/bin/Debug/net8.0/zh-Hant/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/home/user/BlazorProjects/TestApp/bin/Debug/net8.0/runtimes/win/lib/netcoreapp3.0/Microsoft.Win32.SystemEvents.dll
+/home/user/BlazorProjects/TestApp/bin/Debug/net8.0/runtimes/unix/lib/netcoreapp3.0/System.Drawing.Common.dll
+/home/user/BlazorProjects/TestApp/bin/Debug/net8.0/runtimes/win/lib/netcoreapp3.0/System.Drawing.Common.dll
+/home/user/BlazorProjects/TestApp/obj/Debug/net8.0/TestApp.csproj.AssemblyReference.cache
+/home/user/BlazorProjects/TestApp/obj/Debug/net8.0/TestApp.GeneratedMSBuildEditorConfig.editorconfig
+/home/user/BlazorProjects/TestApp/obj/Debug/net8.0/TestApp.AssemblyInfoInputs.cache
+/home/user/BlazorProjects/TestApp/obj/Debug/net8.0/TestApp.AssemblyInfo.cs
+/home/user/BlazorProjects/TestApp/obj/Debug/net8.0/TestApp.csproj.CoreCompileInputs.cache
+/home/user/BlazorProjects/TestApp/obj/Debug/net8.0/TestApp.MvcApplicationPartsAssemblyInfo.cache
+/home/user/BlazorProjects/TestApp/obj/Debug/net8.0/TestApp.sourcelink.json
 /home/user/BlazorProjects/TestApp/obj/Debug/net8.0/staticwebassets.build.json
 /home/user/BlazorProjects/TestApp/obj/Debug/net8.0/staticwebassets.development.json
 /home/user/BlazorProjects/TestApp/obj/Debug/net8.0/staticwebassets/msbuild.TestApp.Microsoft.AspNetCore.StaticWebAssets.props
@@ -106,11 +114,3 @@
 /home/user/BlazorProjects/TestApp/obj/Debug/net8.0/TestApp.pdb
 /home/user/BlazorProjects/TestApp/obj/Debug/net8.0/TestApp.genruntimeconfig.cache
 /home/user/BlazorProjects/TestApp/obj/Debug/net8.0/ref/TestApp.dll
-/home/user/BlazorProjects/TestApp/obj/Debug/net8.0/TestApp.sourcelink.json
-/home/user/BlazorProjects/TestApp/bin/Debug/net8.0/Aspose.SVG.dll
-/home/user/BlazorProjects/TestApp/bin/Debug/net8.0/Microsoft.Win32.SystemEvents.dll
-/home/user/BlazorProjects/TestApp/bin/Debug/net8.0/System.Drawing.Common.dll
-/home/user/BlazorProjects/TestApp/bin/Debug/net8.0/System.Security.Permissions.dll
-/home/user/BlazorProjects/TestApp/bin/Debug/net8.0/runtimes/win/lib/netcoreapp3.0/Microsoft.Win32.SystemEvents.dll
-/home/user/BlazorProjects/TestApp/bin/Debug/net8.0/runtimes/unix/lib/netcoreapp3.0/System.Drawing.Common.dll
-/home/user/BlazorProjects/TestApp/bin/Debug/net8.0/runtimes/win/lib/netcoreapp3.0/System.Drawing.Common.dll
