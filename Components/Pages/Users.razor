@@ -314,6 +314,12 @@
             }
         }
 
+        // Проверяем, нужно ли сбрасывать текущую страницу
+        if (currentPage > TotalPages)
+        {
+            currentPage = 1; // Устанавливаем на последнюю страницу, если текущая больше общего количества страниц
+        }
+
         totalUsers = query.Count(); // Получаем общее количество пользователей
         users = query.Skip((currentPage - 1) * userCount).Take(userCount).ToList().AsQueryable(); // Загружаем только нужное количество пользователей
     }    
@@ -425,6 +431,7 @@
     private void ApplyFilter()
     {
         LoadUsers(); // Применить фильтр и загрузить пользователей
+        StateHasChanged();
         isFilterVisible = false; // Скрыть окно фильтрации
     }
     //Очистка всех фильтров
